@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace lab3sh
 {
-    class Student : Person, IDateAndCopy, System.Collections.IEnumerable
+    internal class Student : Person, IDateAndCopy, IEnumerable
     {
         Education educationType;
         int groupNumber;
-        System.Collections.ArrayList passedExams;
-        System.Collections.ArrayList tests;
+        List<Exam> passedExams;
+        List<Test> tests;
 
         public Student(Person newPersonData, Education newEducation, int newGroupNumber)
         {
@@ -39,12 +36,12 @@ namespace lab3sh
             get { return educationType; }
             set { educationType = value; }
         }
-        public System.Collections.ArrayList PassedExams
+        public List<Exam> PassedExams
         {
             get { return passedExams; }
-            set { passedExams = value; }
+            set => passedExams = value;
         }
-        public System.Collections.ArrayList Tests
+        public List<Test> Tests
         {
             get { return tests; }
             set { tests = value; }
@@ -55,7 +52,8 @@ namespace lab3sh
             set
             {
                 if (value <= 100 || value >= 599)
-                    throw new System.OverflowException("Invalid group number. The group number cannot be higher than 599 or lower than 100. (100 <= x <= 599)");
+                    throw new System.OverflowException("Invalid group number. The group number cannot be higher" + 
+                                                       "than 599 or lower than 100. (100 <= x <= 599)");
             }
         }
         public double AverageScore
@@ -137,7 +135,7 @@ namespace lab3sh
         }
         public override string ToShortString()
         {
-            return String.Format("Student:\n{0}\nEducation type:\n{1}\nGroup number:\n{2}\nPassed exams AVG:\n{3}",
+            return String.Format("/ Student:\n{0}\n/ Education type:\n{1}\n/ Group number:\n{2}\n/ Passed exams AVG:\n{3}",
                 PersonData.ToShortString(), EducationString(), groupNumber.ToString(), AverageScore);
         }
         public override bool Equals(object obj)
@@ -163,15 +161,10 @@ namespace lab3sh
         }
         private bool IsEqual(Student obj)
         {
-            bool equalsExam = false;
-            if (passedExams.Count == 0 && obj.PassedExams.Count == 0)
-                equalsExam = true;
-            foreach (Exam exam in passedExams)
-                if (obj.PassedExams.Contains(exam))
-                    equalsExam = true;
-                else
-                    equalsExam = false;
-            return (PersonData.Equals(obj.PersonData)) && (educationType.Equals(obj.educationType)) && (groupNumber.Equals(obj.groupNumber)) && equalsExam;
+            bool equalsExam = passedExams.Count == 0 && obj.PassedExams.Count == 0;
+            foreach (Exam exam in passedExams) equalsExam = obj.PassedExams.Contains(exam);
+            return (PersonData.Equals(obj.PersonData)) && (educationType.Equals(obj.educationType)) && 
+                   (groupNumber.Equals(obj.groupNumber)) && equalsExam;
         }
         public static bool operator ==(Student lhs, Student rhs)
         {
@@ -188,9 +181,9 @@ namespace lab3sh
         public override object DeepCopy()
         {
             Student student = new((Person)PersonData.DeepCopy(), educationType, groupNumber);
-            /*Exam[] newPassedExams = new Exam[passedExams.Length];
-            for (int i = 0; i < passedExams.Length; i++)
-                newPassedExams[i] = (Exam)passedExams[i].DeepCopy();*/
+            // Exam[] newPassedExams = new Exam[passedExams.Length];
+            // for (int i = 0; i < passedExams.Length; i++)
+            //     newPassedExams[i] = (Exam)passedExams[i].DeepCopy();
             foreach (Exam exam in passedExams)
                 student.AddExams((Exam)exam.DeepCopy());
             foreach (Test test in tests)

@@ -9,7 +9,7 @@ namespace lab3sh
 {
     class StudentEnumerator: System.Collections.IEnumerator
     {
-        int postition = -1;
+        int position = -1;
         System.Collections.Generic.List<string> subjects;
 
         public StudentEnumerator(Student st)
@@ -30,14 +30,14 @@ namespace lab3sh
         {
             get
             {
-                return subjects[postition];
+                return subjects[position];
             }
         }
         public bool MoveNext()
         {
-            if (postition < subjects.Count - 1)
+            if (position < subjects.Count - 1)
             {
-                postition++;
+                position++;
                 return true;
             }
             else
@@ -45,7 +45,7 @@ namespace lab3sh
         }
         public void Reset()
         {
-            postition = -1;
+            position = -1;
         }
     }
 }

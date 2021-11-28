@@ -1,5 +1,7 @@
 ﻿using System;
-using System.Diagnostics; //1 var
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization; //1 var
 using System.Runtime.InteropServices;
 
 namespace lab3sh
@@ -10,65 +12,92 @@ namespace lab3sh
         {
             Console.WriteLine(">>>>>>>>>>>>>>> {0} <<<<<<<<<<<<<<<", text);
         }
+        static void SubMark(string text)
+        {
+            Console.WriteLine("******* {0}", text);
+        }
+        
         static void Main(string[] args)
         {
+            //"Создание StudentCollection"
+            StudentCollection studentCollection = new StudentCollection();
+            studentCollection.AddDefaults();
+            List<Exam> exams = new List<Exam>();
+            Random rand = new Random();
+            List<Student> newStds = studentCollection.ListStudents;
+            newStds[0].Name = "Alex";
+            newStds[0].Surname = "Alexander";
+            newStds[4].Name = "Zed";
+            newStds[4].Surname = "Johnson";
+            newStds[3].Date = DateTime.Now;
+            newStds[2].Date = new DateTime(1990, 12, 3);
+            newStds[1].EducationType = Education.Specialist;
+            for (int i = 0; i < newStds.Count; i++)
+            {
+                for (int j = 0; j < 5; j++)
+                {
+                    exams.Add(new Exam("Exam #" + j, rand.Next(1, 5), new DateTime()));
+                }
+                newStds[i].AddExams(exams.ToArray());
+                exams.Clear();
+            }
+            studentCollection = new StudentCollection();
+            studentCollection.ListStudents = newStds;
             Mark("1");
-            Student a = new();
-            Student b = (Student)a.DeepCopy();
-            Console.WriteLine("{0}\n{1}", a.ToShortString(), a.ToShortString());
-            Console.WriteLine("Are the objects same: {0}\nAre the adresses same: {1}\nHash codes:\na = {2}\nb = {3}\nEqual?: {4}\n",
-                a == b? "Yes" : "No", (object)a == (object)b ? "Yes" : "No", a.GetHashCode(), b.GetHashCode(), a.GetHashCode() == b.GetHashCode()? "Yes" : "No");
-
+            Console.WriteLine(studentCollection.ToString());
+            
             Mark("2");
-            Student student = new();
-            student.AddExams(new Exam("English", 3, new DateTime()));
-            student.AddTests(new Test());
-            Console.WriteLine(student.ToString());
-            Console.WriteLine();
+            StudentCollection sortable = studentCollection;
+            
+            SubMark("По фамилии:\n");
+            sortable.sortBySurname();
+            Console.WriteLine(sortable.ToShortString());
+            
+            SubMark("По дате рождения:\n");
+            sortable.sortByBday();
+            Console.WriteLine(sortable.ToString());
+            
+            SubMark("По среднему баллу:\n");
+            sortable.sortByScoreAverage();
+            Console.WriteLine(sortable.ToShortString());
+            
             Mark("3");
-            Console.WriteLine(student.PersonData.ToString());
+            SubMark("1");
+            Console.WriteLine(studentCollection.MaxAverage);
+            
+            SubMark("2");
+            foreach(var student in studentCollection.Specialists)
+            {
+                Console.WriteLine(student.ToString());
+            }
+            
+            SubMark("3");
+            double avg = newStds[0].AverageScore;
+            SubMark("Equals");
+            foreach (Student student in studentCollection.AverageMarkGroup(avg)[0])
+            {
+                Console.WriteLine(student.ToShortString());
+            }
+            SubMark("Not equals");
+            foreach (Student student in studentCollection.AverageMarkGroup(avg)[1])
+            {
+                Console.WriteLine(student.ToShortString());
+            }
+            
             Mark("4");
-            Student altStudent = (Student)student.DeepCopy();
-            student.EducationType = Education.Specialist;
-            student.BdayYear = 2016;
-            student.AddExams(new Exam("PE", 6, new DateTime()));
-            Console.WriteLine(student.ToString());
-            Console.WriteLine();
-            Console.WriteLine(altStudent.ToString());
-            Mark("5");
-            try
-            {
-                student.GroupNumber = 600;
-            }
-            catch (OverflowException err)
-            {
-                System.Console.WriteLine(err.Message);
-            }
-            Mark("6");
-            foreach(object obj in student.GetAllExams())
-                Console.WriteLine(obj.ToString());
-            Mark("7");
-            foreach (Exam exam in student.GetExams(3.0))
-                Console.WriteLine(exam.ToString());
-            Console.WriteLine("----------------------------AE--------------------------");
-            Mark("8");
-            student.AddTests(new Test("English", true));
-            Console.WriteLine(student.ToString());
-            Console.WriteLine("-------------Same Exams-------------");
-            foreach(string p in student)
-            {
-                Console.WriteLine(p);
-            }
-            Mark("9");
-            foreach(var p in student.GetAllPassedExams())
-            {
-                Console.WriteLine(p.ToString());
-            }
-            Mark("10");
-            foreach(Test p in student.GetTestsWithExams())
-            {
-                Console.WriteLine(p.ToString());
-            }
+            TestCollections testCollections = new TestCollections(10);
+            SubMark("Person List");
+            testCollections.testSearchTimeListPerson();
+            SubMark("String List");
+            testCollections.testSearchTimeListStr();
+            SubMark("Person Dict, key");
+            testCollections.testSearchTimeDictPersonKey();
+            SubMark("Person Dict, value");
+            testCollections.testSearchTimeDictPersonValue();
+            SubMark("String Dict, key");
+            testCollections.testSearchTimeDictStrKey();
+            SubMark("String Dict, value");
+            testCollections.testSearchTimeDictStrValue();
         }
     }
 }

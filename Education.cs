@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace lab3sh
 {
-    enum Education
+    public enum Education
     {
         Specialist,
         Bachelor,

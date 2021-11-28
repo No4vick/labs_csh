@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace lab3sh
 {
-    class Person : IDateAndCopy
+    class Person : IDateAndCopy, IComparable, IComparer<Person>
     {
         protected string name;
         protected string surname;
@@ -44,12 +44,34 @@ namespace lab3sh
         }
         public override string ToString()
         {
-            return String.Format("Name: {0}, Surname: {1}, Bday: {2}", name, surname, date.ToShortDateString());                      
+            return $"Name: {name}, Surname: {surname}, Bday: {date.ToShortDateString()}";                      
         }
+
+        public int CompareTo(object obj)
+        {
+            if (obj == null) return 1;
+
+            Person otherPerson = obj as Person;
+            if (otherPerson != null)
+                return this.date.CompareTo(otherPerson.date);
+            else
+                throw new ArgumentException("Object is not a Person");
+        }
+
         public virtual string ToShortString()
         {
             return name + " " + surname;
         }
+
+        public int Compare(Person x, Person y)
+        {
+            if (x is null || y is null)
+            {
+                throw new NullReferenceException();
+            } 
+            return x.date.CompareTo(y.date) != 0 ? x.date.CompareTo(y.date) : 0;
+        }
+
         public override bool Equals(object obj)
         {
             if (obj is null)
