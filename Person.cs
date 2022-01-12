@@ -19,8 +19,13 @@ namespace lab3sh
             date = newDate;
         }
         public Person():this("John", "Smith", new DateTime(2000, 1, 1))
-        {
+        { }
 
+        public Person(int n)
+        {
+            name = n.ToString();
+            surname = n.ToString();
+            date = new DateTime(2000,n % 12 + 1,n % 28 + 1);
         }
         public string Name
         {

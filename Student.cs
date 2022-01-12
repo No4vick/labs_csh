@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace lab3sh
 {
-    internal class Student : Person, IDateAndCopy, IEnumerable
+    internal class Student : Person, IEnumerable
     {
         Education educationType;
         int groupNumber;
@@ -21,6 +21,16 @@ namespace lab3sh
         }
         public Student() : this(new Person(), Education.Bachelor, 11) { }
 
+        public Student(int n)
+        {
+            Random rnd = new Random();
+            educationType = (Education) (n % 3);
+            groupNumber = rnd.Next(101, 598);
+            passedExams = new() { new Exam() };
+            tests = new();
+            Tests.Add(new Test());
+        }
+        
         public Person PersonData
         {
             get { return new Person(name, surname, date); }
@@ -53,7 +63,7 @@ namespace lab3sh
             {
                 if (value <= 100 || value >= 599)
                     throw new System.OverflowException("Invalid group number. The group number cannot be higher" + 
-                                                       "than 599 or lower than 100. (100 <= x <= 599)");
+                                                       " than 599 or lower than 100. (100 <= x <= 599)");
             }
         }
         public double AverageScore
@@ -142,7 +152,7 @@ namespace lab3sh
         {
             if (obj is null)
                 return false;
-            if (Object.ReferenceEquals(this, obj))
+            if (ReferenceEquals(this, obj))
                 return true;
             if (obj.GetType() != this.GetType())
                 return false;
@@ -224,6 +234,31 @@ namespace lab3sh
         IEnumerator IEnumerable.GetEnumerator()
         {
             return new StudentEnumerator(this);
+        }
+
+        public void SortExamsSubject()
+        {
+            passedExams.Sort((x, y) => x.CompareTo(y));
+        }
+
+        public void SortExamsScore()
+        {
+            passedExams.Sort(new Exam().Compare);
+        }
+
+        public void SortExamDate()
+        {
+            passedExams.Sort(new ExamComparer().Compare);
+        }
+        
+        public string GetExamsString()
+        {
+            string str = "Exam list:\n";
+            foreach(Exam i in passedExams)
+            {
+                str = str + i + "\n";
+            }
+            return str;
         }
     }
 }

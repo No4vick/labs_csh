@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace lab3sh
 {
-    class Exam : IDateAndCopy
+    public class Exam : IComparable, IComparer<Exam>
     {
         string subject;
         int score;
@@ -41,8 +38,42 @@ namespace lab3sh
         }
         public override string ToString()
         {
-            return string.Format("Subject: {0}; Score: {1}; Date: {2}\n", subject, score, examDate.ToShortDateString());
+            return $"Subject: {subject}; Score: {score}; Date: {examDate.ToShortDateString()}\n";
         }
+
+        public int CompareTo(object obj)
+        {
+            Exam p = obj as Exam;
+            if (p != null)
+            {
+                return String.Compare(this.Subject, p.Subject, StringComparison.Ordinal);
+            }
+            else
+            {
+                throw new Exception("Not comparable.");
+            }
+        }
+
+        public int Compare(Exam x, Exam y)
+        {
+            if (x is null || y is null)
+            {
+                throw new ArgumentNullException();
+            }
+            
+            if (x.Score > y.Score)
+            {
+                return 1;
+            }
+
+            if (x.Score < y.Score)
+            {
+                return -1;
+            }
+
+            return 0;
+        }
+
         public override bool Equals(object obj)
         {
             if (obj is null)

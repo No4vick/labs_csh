@@ -1,103 +1,68 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization; //1 var
-using System.Runtime.InteropServices;
+
+//1 var
 
 namespace lab3sh
 {
+    delegate TKey KeySelector<TKey>(Student st);
+    delegate KeyValuePair<TKey, TValue> GenerateElement<TKey, TValue>(int j);
     class Program
     {
-        static void Mark(string text)
-        {
-            Console.WriteLine(">>>>>>>>>>>>>>> {0} <<<<<<<<<<<<<<<", text);
-        }
-        static void SubMark(string text)
-        {
-            Console.WriteLine("******* {0}", text);
-        }
-        
         static void Main(string[] args)
         {
-            //"Создание StudentCollection"
-            StudentCollection studentCollection = new StudentCollection();
-            studentCollection.AddDefaults();
-            List<Exam> exams = new List<Exam>();
-            Random rand = new Random();
-            List<Student> newStds = studentCollection.ListStudents;
-            newStds[0].Name = "Alex";
-            newStds[0].Surname = "Alexander";
-            newStds[4].Name = "Zed";
-            newStds[4].Surname = "Johnson";
-            newStds[3].Date = DateTime.Now;
-            newStds[2].Date = new DateTime(1990, 12, 3);
-            newStds[1].EducationType = Education.Specialist;
-            for (int i = 0; i < newStds.Count; i++)
+
+            GenerateElement<Person, Student> generateElement = n => new KeyValuePair<Person, Student>(new Person(n), new Student(n));
+
+            
+            KeySelector<String> delegateKeySelector = st =>  st.GetHashCode().ToString(); 
+            var collection = new StudentCollection<String>(delegateKeySelector);
+            
+            Exam exam1 = new Exam("Exam 1", 4, new DateTime(1, 1, 1));
+            Exam exam2 = new Exam("Exam 2",3 , new DateTime(1, 1, 2));
+            Exam exam3 = new Exam("Exam 3", 5, new DateTime(1, 1, 1));
+            Console.WriteLine(exam1.CompareTo(exam2));
+            Console.WriteLine(exam2.CompareTo(exam1));
+            Console.WriteLine(exam3.CompareTo(exam1));
+            
+            Student defaultStudent = new Student();
+
+            defaultStudent.AddExams(exam1, exam2, exam3);
+            Console.WriteLine(defaultStudent.GetExamsString());
+
+            defaultStudent.SortExamDate();
+            Console.WriteLine(defaultStudent.GetExamsString());
+
+            defaultStudent.SortExamsScore();
+            Console.WriteLine(defaultStudent.GetExamsString());
+
+            defaultStudent.SortExamsSubject();
+            Console.WriteLine(defaultStudent.GetExamsString());
+
+            collection.AddDefaults();
+            collection.AddStudent(defaultStudent, new Student());
+            Console.WriteLine(collection.ToString());
+
+            Console.WriteLine(collection.AverageScore);
+
+            Console.WriteLine("-----------------------");
+            foreach(var i in collection.EducationForm(Education.Specialist))
             {
-                for (int j = 0; j < 5; j++)
+                Console.WriteLine(i.Value.ToString());
+            }
+
+            foreach (var group in collection.GroupEducation)
+            {
+                Console.WriteLine("\nAge group: " + group.Key);
+                foreach(var student in group)
                 {
-                    exams.Add(new Exam("Exam #" + j, rand.Next(1, 5), new DateTime()));
+                    Console.WriteLine(student.Value.ToShortString());
                 }
-                newStds[i].AddExams(exams.ToArray());
-                exams.Clear();
             }
-            studentCollection = new StudentCollection();
-            studentCollection.ListStudents = newStds;
-            Mark("1");
-            Console.WriteLine(studentCollection.ToString());
-            
-            Mark("2");
-            StudentCollection sortable = studentCollection;
-            
-            SubMark("По фамилии:\n");
-            sortable.sortBySurname();
-            Console.WriteLine(sortable.ToShortString());
-            
-            SubMark("По дате рождения:\n");
-            sortable.sortByBday();
-            Console.WriteLine(sortable.ToString());
-            
-            SubMark("По среднему баллу:\n");
-            sortable.sortByScoreAverage();
-            Console.WriteLine(sortable.ToShortString());
-            
-            Mark("3");
-            SubMark("1");
-            Console.WriteLine(studentCollection.MaxAverage);
-            
-            SubMark("2");
-            foreach(var student in studentCollection.Specialists)
-            {
-                Console.WriteLine(student.ToString());
-            }
-            
-            SubMark("3");
-            double avg = newStds[0].AverageScore;
-            SubMark("Equals");
-            foreach (Student student in studentCollection.AverageMarkGroup(avg)[0])
-            {
-                Console.WriteLine(student.ToShortString());
-            }
-            SubMark("Not equals");
-            foreach (Student student in studentCollection.AverageMarkGroup(avg)[1])
-            {
-                Console.WriteLine(student.ToShortString());
-            }
-            
-            Mark("4");
-            TestCollections testCollections = new TestCollections(10);
-            SubMark("Person List");
-            testCollections.testSearchTimeListPerson();
-            SubMark("String List");
-            testCollections.testSearchTimeListStr();
-            SubMark("Person Dict, key");
-            testCollections.testSearchTimeDictPersonKey();
-            SubMark("Person Dict, value");
-            testCollections.testSearchTimeDictPersonValue();
-            SubMark("String Dict, key");
-            testCollections.testSearchTimeDictStrKey();
-            SubMark("String Dict, value");
-            testCollections.testSearchTimeDictStrValue();
+            TestCollections<Person, Student> collections = new TestCollections<Person, Student>(800000, generateElement);
+            collections.testTime();
         }
+            
     }
+   
 }

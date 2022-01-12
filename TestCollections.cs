@@ -6,45 +6,48 @@ using System.Runtime.CompilerServices;
 
 namespace lab3sh
 {
-    class TestCollections
+    class TestCollections<TKey, TValue>
     {
-        private List<Person> personList;
+        private List<TKey> Tlist;
         private List<string> strList;
-        private Dictionary<Person, Student> personDict;
-        private Dictionary<string, Student> strDict;
+        private Dictionary<TKey, TValue> TDict;
+        private Dictionary<string, TValue> strDict;
+        private GenerateElement<TKey, TValue> deleg;
         private static Student generatedStudent;
 
-        public TestCollections(int n)
+        public TestCollections(int n, GenerateElement<TKey, TValue> method)
         {
-            personList = new List<Person>(n);
+            Tlist = new List<TKey>(n);
             strList = new List<String>(n);
-            personDict = new Dictionary<Person, Student>(n);
-            strDict = new Dictionary<string, Student>(n);
+            TDict = new Dictionary<TKey, TValue>(n);
+            strDict = new Dictionary<string, TValue>(n);
             for (int i = 0; i < n; i++)
             {
-                Student student = generateStudent(i);
-                personList.Add(student);
-                strList.Add(student.ToString());
-                personDict.Add(student, student);
-                strDict.Add(student.ToString(), student);
+                var item = method(i);
+                Tlist.Add(item.Key);
+                strList.Add(item.Key.ToString());
+                TDict.Add(item.Key, item.Value);
+                strDict.Add(item.ToString(), item.Value);
             }
+
+            deleg = method;
         }
         
-        static ref Student generateStudent(int n)
-        {
-            Random rand = new Random();
-            ref Student student = ref generatedStudent;
-            student = new Student(new Person("Student", $"-{n}-", new DateTime()),
-                Education.SecondEducation, rand.Next(100, 599));
-            return ref student;
-        }
+        // static ref KeyValuePair<TKey, TValue> generateStudent(int n)
+        // {
+        //     Random rand = new Random();
+        //     ref Student student = ref generatedStudent;
+        //     student = new Student(new Person("Student", $"-{n}-", new DateTime()),
+        //         Education.SecondEducation, rand.Next(100, 599));
+        //     return ref student;
+        // }
 
         void testSearchTimeListGeneric<T>(List<T> list)
         {
             var first = list[0];
             var middle = list[list.Count / 2];
             var last = list[list.Count - 1];
-            var none = (T)(object)generateStudent(list.Count + 1);
+            var none = (T)(object)deleg(list.Count + 1).Key;
 
             Stopwatch stopwatch = Stopwatch.StartNew();
             
@@ -74,7 +77,7 @@ namespace lab3sh
             var first = list[0];
             var middle = list[list.Count / 2];
             var last = list[list.Count - 1];
-            var none = generateStudent(list.Count + 1).ToString();
+            var none = deleg(list.Count + 1).Key.ToString();
 
             Stopwatch stopwatch = Stopwatch.StartNew();
             
@@ -104,7 +107,7 @@ namespace lab3sh
             var first = dict.ElementAt(0).Key;
             var middle = dict.ElementAt(dict.Count / 2).Key;
             var last = dict.ElementAt(dict.Count - 1).Key;
-            var none = (T)(object)generateStudent(dict.Count + 1);
+            var none = (T)(object)deleg(dict.Count + 1).Key;
 
             var watch = Stopwatch.StartNew();
             dict.ContainsKey(first);
@@ -132,7 +135,7 @@ namespace lab3sh
             var first = dict.ElementAt(0).Key;
             var middle = dict.ElementAt(dict.Count / 2).Key;
             var last = dict.ElementAt(dict.Count - 1).Key;
-            var none = generateStudent(dict.Count + 1).ToString();
+            var none = deleg(dict.Count + 1).ToString();
 
             var watch = Stopwatch.StartNew();
             dict.ContainsKey(first);
@@ -160,7 +163,7 @@ namespace lab3sh
             var first = dict.ElementAt(0).Value;
             var middle = dict.ElementAt(dict.Count / 2).Value;
             var last = dict.ElementAt(dict.Count - 1).Value;
-            var none = (TK)(object)generateStudent(dict.Count + 1);
+            var none = (TK)(object)deleg(dict.Count + 1).Value;
 
             var watch = Stopwatch.StartNew();
             dict.ContainsValue(first);
@@ -185,7 +188,7 @@ namespace lab3sh
 
         public void testSearchTimeListPerson()
         {
-            testSearchTimeListGeneric(personList);
+            testSearchTimeListGeneric(Tlist);
         }
 
         public void testSearchTimeListStr()
@@ -195,12 +198,12 @@ namespace lab3sh
 
         public void testSearchTimeDictPersonKey()
         {
-            testSearchTimeDictGenericKey(personDict);
+            testSearchTimeDictGenericKey(TDict);
         }
 
         public void testSearchTimeDictPersonValue()
         {
-            testSearchTimeDictGenericValue(personDict);
+            testSearchTimeDictGenericValue(TDict);
         }
         
         public void testSearchTimeDictStrKey()
@@ -211,6 +214,16 @@ namespace lab3sh
         public void testSearchTimeDictStrValue()
         {
             testSearchTimeDictGenericValue(strDict);
+        }
+
+        public void testTime()
+        {
+            testSearchTimeListPerson();
+            testSearchTimeListStr();
+            testSearchTimeDictPersonKey();
+            testSearchTimeDictPersonValue();
+            testSearchTimeDictStrKey();
+            testSearchTimeDictStrValue();
         }
     }
 }

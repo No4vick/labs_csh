@@ -4,56 +4,32 @@ using System.Linq;
 
 namespace lab3sh
 {
-    class StudentCollection
+    class StudentCollection<TKey>
     {
-        private System.Collections.Generic.List<Student> students;
+        private Dictionary<TKey, Student> dictionary;
+        private KeySelector<TKey> deleg;
 
-        public List<Student> ListStudents
+        public StudentCollection(KeySelector<TKey> newDeleg)
         {
-            get { return students; }
-            set { students = value; }
-        }
-        
-        public double MaxAverage
-        {
-            get
-            {
-                return students.Max(s => s.AverageScore);
-            }
-        }
-
-        public IEnumerable<Student> Specialists
-        {
-            get
-            {
-                return students.Where(student => student.EducationType == Education.Specialist);
-            }
+            deleg = newDeleg;
         }
 
         public void AddDefaults()
         {
             int number = 5;
-            students = new List<Student>();
+            dictionary = new Dictionary<TKey, Student>();
             for (int i = 0; i < number; i++)
             {
-                students.Add(new Student());
+                dictionary.Add(deleg(new Student()), new Student());
             }
         }
-
-        public void AddStudents(params Student[] stds)
-        {
-            foreach (Student student in stds)
-            {
-                students.Add(student);
-            }
-        }
-
+        
         public override string ToString()
         {
             string res = new string("");
-            foreach (Student student in students)
+            foreach (KeyValuePair<TKey, Student> student in dictionary)
             {
-                res += $"{student.ToString()}\n";
+                res += $"{student.Key} : {student.Value}\n";
             }
             return res;
         }
@@ -61,35 +37,54 @@ namespace lab3sh
         public string ToShortString()
         {
             string res = new string("");
-            foreach (Student student in students)
+            foreach (KeyValuePair<TKey, Student> student in dictionary)
             {
-                res += $"{student.ToShortString()}\n";
+                res += $"{student.Key} : {student.Value.ToShortString()}\n";
             }
             return res;
         }
 
-        public void sortBySurname()
+        public double AverageScore
         {
-            students.Sort((student, student1) => String.Compare(student.Surname, student1.Surname));
-        }
+            get
+            {
+                double avg = 0;
+                if (dictionary.Count == 0)
+                {
+                    return avg;
+                }
 
-        public void sortByBday()
-        {
-            students.Sort(new Person().Compare);
-        }
-
-        public void sortByScoreAverage()
-        {
-            students.Sort(new StudentComparer());
+                return Enumerable.Max(getAverageScores());
+            }
         }
         
-        public List<List<Student>> AverageMarkGroup(double value)
+        public IEnumerable<double> getAverageScores()
         {
-            return students
-                .GroupBy(s => s.AverageScore.Equals(value))
-                .Select(grp => grp.ToList())
-                .ToList();
+            foreach (KeyValuePair<TKey, Student> keyValue in dictionary)
+            {
+                yield return keyValue.Value.AverageScore;
+            }
         }
 
+        public IEnumerable<KeyValuePair<TKey, Student>> EducationForm(Education value)
+        {
+            return dictionary.Where(elem => elem.Value.EducationType == value);
+        }
+
+        public IEnumerable<IGrouping<Education, KeyValuePair<TKey, Student>>> GroupEducation
+        {
+            get
+            {
+                return dictionary.GroupBy(student => student.Value.EducationType);
+            }
+        }
+
+        public void AddStudent(params Student[] values)
+        {
+            foreach (var student in values)
+            {
+                dictionary.Add(deleg(student), student);
+            }
+        }
     }
 }
