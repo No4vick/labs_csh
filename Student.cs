@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace lab3sh
 {
-    internal class Student : Person, IEnumerable
+    internal class Student : Person, IEnumerable, INotifyPropertyChanged
     {
         Education educationType;
         int groupNumber;
         List<Exam> passedExams;
         List<Test> tests;
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public Student(Person newPersonData, Education newEducation, int newGroupNumber)
         {
@@ -39,22 +42,35 @@ namespace lab3sh
                 name = value.Name;
                 surname = value.Surname;
                 date = value.Date;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("person data"));
             }
         }
         public Education EducationType
         {
             get { return educationType; }
-            set { educationType = value; }
+            set
+            {
+                educationType = value; 
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("education type"));
+            }
         }
         public List<Exam> PassedExams
         {
             get { return passedExams; }
-            set => passedExams = value;
+            set
+            {
+                passedExams = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("passed exams"));
+            }
         }
         public List<Test> Tests
         {
             get { return tests; }
-            set { tests = value; }
+            set
+            {
+                tests = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("tests"));
+            }
         }
         public int GroupNumber
         {
@@ -64,6 +80,7 @@ namespace lab3sh
                 if (value <= 100 || value >= 599)
                     throw new System.OverflowException("Invalid group number. The group number cannot be higher" + 
                                                        " than 599 or lower than 100. (100 <= x <= 599)");
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("group number"));
             }
         }
         public double AverageScore

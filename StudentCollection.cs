@@ -86,5 +86,25 @@ namespace lab3sh
                 dictionary.Add(deleg(student), student);
             }
         }
+        
+        public string CollectionName { get; set; }
+
+        public bool Remove(Student st)
+        {
+            if (!dictionary.ContainsValue(st)) return false;
+            
+            foreach(var item in dictionary.Where(elem => elem.Value == st).ToList())
+            {
+                dictionary.Remove(item.Key);
+            }
+            return true;
+        }
+
+        public event StudentsChangedHandler<TKey> StudentChanged;
+
+        private void onStudentCollectionPropertyChanged(Action action, string name, TKey changedKey)
+        {
+            StudentChanged?.Invoke(this, new StudentsChangedEventArgs<TKey>(CollectionName, action, name, changedKey));
+        }
     }
 }
