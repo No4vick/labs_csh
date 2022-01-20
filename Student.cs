@@ -2,10 +2,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Xml.Linq;
 
 namespace lab3sh
 {
+    [Serializable]
     internal class Student : Person, IEnumerable, INotifyPropertyChanged
     {
         Education educationType;
@@ -172,7 +178,7 @@ namespace lab3sh
             }
             else
                 testsString = "None";
-            return String.Format("> Student:\n{0}\n> Education type:\n{1}\n> Group number:{2}\n> Passed exams:\n{3}\n> Tests:\n{4}",
+            return String.Format("> Student:\n{0}\n> Education type:\n{1}\n> Group number: {2}\n> Passed exams:\n{3}\n> Tests:\n{4}",
                 PersonData.ToString(), EducationString(), groupNumber.ToString(), examsString, testsString);
         }
         public override string ToShortString()
@@ -220,18 +226,15 @@ namespace lab3sh
         {
             return HashCode.Combine(PersonData, educationType, groupNumber, passedExams, tests);
         }
-        public override object DeepCopy()
-        {
-            Student student = new((Person)PersonData.DeepCopy(), educationType, groupNumber);
-            // Exam[] newPassedExams = new Exam[passedExams.Length];
-            // for (int i = 0; i < passedExams.Length; i++)
-            //     newPassedExams[i] = (Exam)passedExams[i].DeepCopy();
-            foreach (Exam exam in passedExams)
-                student.AddExams((Exam)exam.DeepCopy());
-            foreach (Test test in tests)
-                student.AddTests((Test)test.DeepCopy());
-            return student;
-        }
+        // public override object DeepCopy()
+        // {
+        //     Student student = new((Person)PersonData.DeepCopy(), educationType, groupNumber);
+        //     foreach (Exam exam in passedExams)
+        //         student.AddExams((Exam)exam.DeepCopy());
+        //     foreach (Test test in tests)
+        //         student.AddTests((Test)test.DeepCopy());
+        //     return student;
+        // }
         public IEnumerable<object> GetAllExams()
         {
             foreach (Exam exam in passedExams)
@@ -291,6 +294,141 @@ namespace lab3sh
                 str = str + i + "\n";
             }
             return str;
+        }
+        
+        public new Student DeepCopy()
+        {
+            try
+            {
+                MemoryStream stream = new MemoryStream();
+                IFormatter formatter = new BinaryFormatter();
+                formatter.Serialize(stream, this);
+                stream.Seek(0, SeekOrigin.Begin);
+                return (Student) formatter.Deserialize(stream);
+            }
+            catch (Exception e)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Oh no. Error: " + e.Message);
+                Console.ResetColor();
+                return new Student();
+            }
+            
+        }
+
+        public bool Save(string filename)
+        {
+            try
+            {
+                // @"E:\vs proj's\rider proj's\labs_csh\test";
+                using var fs = File.OpenWrite(filename);
+                DataContractSerializer serializer = new(typeof(Student));
+                serializer.WriteObject(fs, this);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public bool Load(string filename)
+        {
+            try
+            {
+                // @"E:\vs proj's\rider proj's\labs_csh\test";
+                using var fs = File.OpenRead(filename);
+                DataContractSerializer serializer = new(typeof(Student));
+                var readStudent = (Student) serializer.ReadObject(fs);
+                
+                name = readStudent.name;
+                surname = readStudent.surname;
+                date = readStudent.date;
+                educationType = readStudent.educationType;
+                groupNumber = readStudent.groupNumber;
+                passedExams = readStudent.passedExams;
+                tests = readStudent.tests;
+                
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Oh no. Error: " + e.Message);
+                Console.ResetColor();
+                return false;
+            }
+        }
+
+        public bool AddFromConsole()
+        {
+            try
+            {
+                Console.WriteLine("Enter new exam to add in this format:\nSubject Name, Score (0-5), ExamDD.ExamMM.ExamYYYY");
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.WriteLine("Write \"skip\" to skip.");
+                Console.ResetColor();
+                
+                string[] splitWords = Console.ReadLine().Split(", ", StringSplitOptions.RemoveEmptyEntries);
+                if (splitWords.Contains("skip"))
+                    return true;
+                string[] dateStrings = splitWords[2].Split(".");
+                passedExams.Add(
+                    new Exam(splitWords[0], Convert.ToInt16(splitWords[1]),
+                    new DateTime(
+                        Convert.ToInt32(dateStrings[2]),
+                        Convert.ToInt16(dateStrings[1]),
+                        Convert.ToInt16(dateStrings[0])))
+                    );
+                return true;
+            }
+            catch
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Invalid input");
+                Console.ResetColor();
+                return false;
+            }
+        }
+
+        public static bool Save(string filename, Student student)
+        {
+            try
+            {
+                // @"E:\vs proj's\rider proj's\labs_csh\test";
+                using var fs = File.OpenWrite(filename);
+                DataContractSerializer serializer = new(typeof(Student));
+                serializer.WriteObject(fs, student);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        public static bool Load(string filename, Student student)
+        {
+            try
+            {
+                // @"E:\vs proj's\rider proj's\labs_csh\test";
+                using var fs = File.OpenRead(filename);
+                DataContractSerializer serializer = new(typeof(Student));
+                var readStudent = (Student) serializer.ReadObject(fs);
+                
+                student.Name = readStudent.name;
+                student.Surname = readStudent.surname;
+                student.Date = readStudent.date;
+                student.EducationType = readStudent.educationType;
+                student.GroupNumber = readStudent.groupNumber;
+                student.PassedExams = readStudent.passedExams;
+                student.Tests = readStudent.tests;
+                
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

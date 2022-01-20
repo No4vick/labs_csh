@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace lab3sh
 {
+    [Serializable]
     class Test
     {
         public string Subject { get; set; }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace lab3sh
 {
+    [Serializable]
     public class Exam : IComparable, IComparer<Exam>
     {
         string subject;

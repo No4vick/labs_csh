@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace lab3sh
 {
+    [Serializable]
     class Person : IDateAndCopy, IComparable, IComparer<Person>
     {
         protected string name;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 //1 var
 
@@ -11,49 +12,63 @@ namespace lab3sh
     delegate void StudentsChangedHandler<TKey>(object source, StudentsChangedEventArgs<TKey> args);
     class Program
     {
-        static void Main(string[] args)
+        private static void Mark(string str)
         {
-            KeySelector<String> delegateKeySelector = st => st.GetHashCode().ToString();
-
-            StudentCollection<string> collection1 = new(delegateKeySelector)
-            {
-                CollectionName = "PIN-1"
-            };
-            StudentCollection<string> collection2 = new(delegateKeySelector)
-            {
-                CollectionName = "PIN-2"
-            };
-
-            Journal journal = new();
-            collection1.StudentChanged += journal.OnStudentChange;
-            collection2.StudentChanged += journal.OnStudentChange;
-
-            Random rand = new();
-
-            Student student1 = new Student(rand.Next());
-            Student student2 = new Student(rand.Next());
-            Student studentDefault = new();
-            
-            // Addition
-            collection1.AddStudent(student1);
-            
-            collection2.AddStudent(student2);
-            collection2.AddStudent(studentDefault);
-            
-            // Change
-            student1.Name = "Ivan";
-            student2.Tests.Add(new Test());
-
-            // Deletion
-            collection2.Remove(studentDefault);
-            
-            // Change of properties of deleted element
-            studentDefault.Name = "Zakhar";
-            studentDefault.PassedExams.Add(new Exam());
-            
-            Console.WriteLine(journal.ToString());
+            Console.WriteLine("\n>>>>> " + str + " <<<<<\n");
         }
 
+        private static bool CheckFile(string filename)
+        {
+            if (!File.Exists(filename))
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("File not found. Creating new.");
+                Console.ResetColor();
+                FileStream fs = File.Create(filename);
+                fs.Close();
+                return false;
+            }
+            
+            return true;
+        }
+
+        static void Main(string[] args)
+        {
+            Student student = new Student(new Person("Ivan", "Ivanov", DateTime.Now), Education.Specialist, 150);
+            student.AddExams(new Exam("Calculus", 4, DateTime.Now));
+
+            // 1. Deep copying
+            Student dcStudent = student.DeepCopy();
+            Mark("Original");
+            Console.WriteLine(student.ToString());
+            Mark("Deep copy with serializing");
+            Console.WriteLine(dcStudent.ToString());
+
+            // 2. Loading from file
+            Console.WriteLine("Enter file name to read:");
+            string filename = Console.ReadLine();
+            if (CheckFile(filename))
+            {
+                // 3.
+                Mark("Read student:");
+                if (student.Load(filename))
+                    Console.WriteLine(student);
+            }
+            
+            // 4. Adding from console and saving
+            student.AddFromConsole();
+            student.Save(filename);
+            Mark("Saved student");
+            Console.WriteLine(student.ToString());
+            
+            // 5. Static saving / loading
+            Student.Load(filename, student);
+            student.AddFromConsole();
+            Student.Save(filename, student);
+            
+            //6.
+            Mark("Saved student");
+            Console.WriteLine(student.ToString());
+        }
     }
-   
 }
