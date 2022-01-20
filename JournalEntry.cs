@@ -19,8 +19,8 @@ namespace lab3sh
         public override string ToString()
         {
             return $"Collection: {CollectionName}\n" +
-                   $"Action{ActionType}\n" +
-                   $"Property caused elements changes:{PropertyName}\n" +
+                   $"Action: {ActionType}\n" +
+                   $"Property caused elements changes: {PropertyName}\n" +
                    $"Key of changed element: {ChangedElementString}";
         }
     }

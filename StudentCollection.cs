@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace lab3sh
 {
     class StudentCollection<TKey>
     {
-        private Dictionary<TKey, Student> dictionary;
+        private Dictionary<TKey, Student> dictionary = new Dictionary<TKey, Student>();
         private KeySelector<TKey> deleg;
 
         public StudentCollection(KeySelector<TKey> newDeleg)
@@ -84,8 +85,12 @@ namespace lab3sh
             foreach (var student in values)
             {
                 dictionary.Add(deleg(student), student);
+                OnStudentCollectionPropertyChanged(Action.Add, "None", deleg(student));
+                student.PropertyChanged += HandleEvent;
             }
         }
+        
+        
         
         public string CollectionName { get; set; }
 
@@ -96,13 +101,24 @@ namespace lab3sh
             foreach(var item in dictionary.Where(elem => elem.Value == st).ToList())
             {
                 dictionary.Remove(item.Key);
+                OnStudentCollectionPropertyChanged(Action.Remove, "None", deleg(item.Value));
+                item.Value.PropertyChanged -= HandleEvent;
             }
             return true;
         }
+        
+        private void HandleEvent(object subject, EventArgs e)
+        {
+            var it = (PropertyChangedEventArgs) e;
+            var student = (Student) subject;
+            var key = deleg(student);
+            OnStudentCollectionPropertyChanged(Action.Property, it.PropertyName, key);
+        }
 
-        public event StudentsChangedHandler<TKey> StudentChanged;
 
-        private void onStudentCollectionPropertyChanged(Action action, string name, TKey changedKey)
+        public StudentsChangedHandler<TKey> StudentChanged;
+
+        private void OnStudentCollectionPropertyChanged(Action action, string name, TKey changedKey)
         {
             StudentChanged?.Invoke(this, new StudentsChangedEventArgs<TKey>(CollectionName, action, name, changedKey));
         }

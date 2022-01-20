@@ -16,12 +16,11 @@ namespace lab3sh
         
         public override string ToString()
         {
-            StringBuilder str = new StringBuilder();
+            StringBuilder str = new StringBuilder("\n\n\t\tChanges:\n\n");
             foreach (var change in journalEntries)
             {
                 str.Append(change + "\n\n");
             }
-
             return str.ToString();
         }
     }

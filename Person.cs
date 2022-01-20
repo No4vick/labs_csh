@@ -27,7 +27,7 @@ namespace lab3sh
             surname = n.ToString();
             date = new DateTime(2000,n % 12 + 1,n % 28 + 1);
         }
-        public string Name
+        public virtual string Name
         {
             get { return name; }
             set { name = value; }

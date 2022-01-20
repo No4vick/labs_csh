@@ -24,6 +24,15 @@ namespace lab3sh
         }
         public Student() : this(new Person(), Education.Bachelor, 11) { }
 
+        public override string Name
+        {
+            get { return name; }
+            set
+            {
+                name = value; 
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Name"));
+            }
+        }
         public Student(int n)
         {
             Random rnd = new Random();
@@ -42,7 +51,7 @@ namespace lab3sh
                 name = value.Name;
                 surname = value.Surname;
                 date = value.Date;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("person data"));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Person data"));
             }
         }
         public Education EducationType
@@ -51,7 +60,7 @@ namespace lab3sh
             set
             {
                 educationType = value; 
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("education type"));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Education type"));
             }
         }
         public List<Exam> PassedExams
@@ -60,7 +69,7 @@ namespace lab3sh
             set
             {
                 passedExams = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("passed exams"));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Passed exams"));
             }
         }
         public List<Test> Tests
@@ -69,7 +78,7 @@ namespace lab3sh
             set
             {
                 tests = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("tests"));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Tests"));
             }
         }
         public int GroupNumber
@@ -80,7 +89,7 @@ namespace lab3sh
                 if (value <= 100 || value >= 599)
                     throw new System.OverflowException("Invalid group number. The group number cannot be higher" + 
                                                        " than 599 or lower than 100. (100 <= x <= 599)");
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("group number"));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Group number"));
             }
         }
         public double AverageScore
@@ -110,12 +119,18 @@ namespace lab3sh
         public void AddExams(params Exam[] newExams)
         {
             foreach (Exam exam in newExams)
+            {
                 passedExams.Add(exam);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Exam"));
+            }
         }
         public void AddTests(params Test[] newTests)
         {
             foreach (Test test in newTests)
+            {
                 tests.Add(test);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Test"));
+            }
         }
         string EducationString()
         {

@@ -13,8 +13,6 @@ namespace lab3sh
     {
         static void Main(string[] args)
         {
-            GenerateElement<Person, Student> generateElement =
-                n => new KeyValuePair<Person, Student>(new Person(n), new Student(n));
             KeySelector<String> delegateKeySelector = st => st.GetHashCode().ToString();
 
             StudentCollection<string> collection1 = new(delegateKeySelector)
@@ -28,9 +26,32 @@ namespace lab3sh
 
             Journal journal = new();
             collection1.StudentChanged += journal.OnStudentChange;
-            collection1.StudentChanged += journal.OnStudentChange;
+            collection2.StudentChanged += journal.OnStudentChange;
 
+            Random rand = new();
+
+            Student student1 = new Student(rand.Next());
+            Student student2 = new Student(rand.Next());
+            Student studentDefault = new();
             
+            // Addition
+            collection1.AddStudent(student1);
+            
+            collection2.AddStudent(student2);
+            collection2.AddStudent(studentDefault);
+            
+            // Change
+            student1.Name = "Ivan";
+            student2.Tests.Add(new Test());
+
+            // Deletion
+            collection2.Remove(studentDefault);
+            
+            // Change of properties of deleted element
+            studentDefault.Name = "Zakhar";
+            studentDefault.PassedExams.Add(new Exam());
+            
+            Console.WriteLine(journal.ToString());
         }
 
     }
